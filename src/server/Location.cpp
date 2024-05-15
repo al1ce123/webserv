@@ -1,6 +1,7 @@
 #include "../../include/server/Location.h"
 
-Location::Location() {
+Location::Location(std::string route) {
+    this->_route = route;
 }
 
 Location::Location(const Location &src) {}

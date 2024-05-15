@@ -24,7 +24,10 @@ fclean: clean
 
 re: fclean all
 
+test:
+	$(CXX) $(CXXFLAGS) ./testing/main.cpp -o prog && ./prog && rm prog
+
 debug: fclean $(OBJ)
 	$(CXX) -g3 $(CXXFLAGS) $(HEADER) $(OBJ) -o $(NAME) -fsanitize=address
 
-.PHONY: all, clean, fclean, re, debug
+.PHONY: all, clean, fclean, re, debug, test
