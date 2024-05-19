@@ -8,8 +8,8 @@ Server::~Server() {}
 
 Server& Server::operator=(const Server &rhs) {}
 
-void Server::parser(std::string file)
-{
+void Server::parser(std::string file) {
+
     std::ifstream configFile("file");
     if (!configFile) {
         std::cerr << "Can't open the file" << '\n';
@@ -31,87 +31,87 @@ void Server::parser(std::string file)
 
         size_t pos;
 
-        // Search for listen directive
+        // Look for Server's listen directive
         pos = line.find("listen");
         if (pos != std::string::npos) {
             parse_listen_line(line);
             continue;
         }
         
-        // Search for server_name directive
+        // Look for Server's server_name directive
         pos = line.find("server_name");
         if (pos != std::string::npos) {
             parse_server_name_line(line);
             continue;
         }
 
-        // Search for server root directive
+        // Look for Server's root directive
         pos = line.find("root");
         if (pos != std::string::npos) {
             parse_root_line(line);
             continue;
         }
 
-        // Search for index directive
+        // Look for Server's index directive
         pos = line.find("index");
         if (pos != std::string::npos) {
             parse_index_line(line);
             continue;
         }
 
-        // Search for location directive
+        // Look for Server's location directive
         pos = line.find("location");
         if (pos != std::string::npos) {
             parse_location_line(configFile, line);
             continue;
         }
 
-        // Search for error_page directive
+        // Look for Server's error_page directive
         pos = line.find("error_page");
         if (pos != std::string::npos) {
             parse_error_page_line(line);
             continue;
         }
     }
-
     configFile.close();
 }
 
-Location* Server::parse_location_line(std::ifstream& file, std::string route)
-{
+Location* Server::parse_location_line(std::ifstream& file, std::string line) {
+
     try {
-        Location* ptr = new Location(route);
-        //
-    } catch (std::bad_alloc& ba){
-        std::cerr << "Bad allocation: " << ba.what() << '\n';
-    }
+        Location* ptr = new Location();
 
-    // parse location block from '{' to '}'
-    std::string line;
+        ptr->get_the_route(line);
 
-    while (line[0] != '}') {
-        std::getline(file, line);
         std::string directive;
+        std::string newLine;
 
-        // retrieve directive
+        while (line[0] != '}') {
+            std::getline(file, newLine);
 
-        if (directive == "root") {
-            ptr->get_root();
-        } else if (directive == "index") {
-            ptr->get_index();
-        } else if (directive == "methods") {
-            ptr->get_methods();
-        } else if (directive == "redir") {
-            ptr->get_redir();
-        } else if (directive == "autoindex") {
-            ptr->get_autoindex();
+            directive = ptr->get_directive(newLine);
+
+            if (directive == "root") {
+                ptr->get_root(newLine);
+            } else if (directive == "index") {
+                ptr->get_index(newLine);
+            } else if (directive == "limit_except") {
+                ptr->get_methods(newLine);
+            } else if (directive == "return") {
+                ptr->get_redir(newLine);
+            } else if (directive == "autoindex") {
+                ptr->set_autoindex_to_true(newLine);
+            } else {
+                continue;
+            }
         }
+    } catch (std::bad_alloc& ba) {
+        std::cerr << "Bad allocation: " << ba.what() << '\n';
     }
 }
 
+int Server::parse_listen_line(std::string line) {
 
-int Server::parse_listen_line(std::string line)
-{
     std::string ip;
     std::string saved_ip;
     std::string port;
@@ -344,3 +344,71 @@ int Server::parse_listen_line(std::string line)
     return 0;
 }
 
+void Server::parse_server_name_line(std::string line) {
+
+    std::string result;
+
+    size_t pos = line.find(" ", 4);
+    size_t endPos = line.find(" ", pos + 1);
+    if (endPos == std::string::npos) {
+        result = line.substr(pos + 1, line.length() - (pos + 1) - 1);
+        this->_server_name.push_back(result);
+        return;
+    } else {
+        while (pos != std::string::npos && endPos != std::string::npos) {
+            result = line.substr(pos + 1, endPos - (pos + 1));
+            this->_server_name.push_back(result);
+            pos = endPos;
+            endPos = line.find(" ", pos + 1);
+        }
+        result = line.substr(pos + 1, line.length() - (pos + 1) -1);
+        this->_server_name.push_back(result);
+    }
+}
+
+void Server::parse_index_line(std::string line) {
+
+    std::string result;
+
+    size_t pos = line.find(" ", 4);
+    size_t endPos = line.find(" ", pos + 1);
+    if (endPos == std::string::npos) {
+        result = line.substr(pos + 1, line.length() - (pos + 1) - 1);
+        this->_index.push_back(result);
+        return;
+    } else {
+        while (pos != std::string::npos && endPos != std::string::npos) {
+            result = line.substr(pos + 1, endPos - (pos + 1));
+            this->_index.push_back(result);
+            pos = endPos;
+            endPos = line.find(" ", pos + 1);
+        }
+        result = line.substr(pos + 1, line.length() - (pos + 1) -1);
+        this->_index.push_back(result);
+    }
+}
+
+std::string Server::parse_root_line(std::string line) {
+
+    std::string result;
+
+    size_t pos = line.find(" ", 4);
+
+    result = line.substr(pos + 1, line.length() - (pos + 1) - 1);
+    this->_root = result;
+    return result;
+}
+
+void Server::parse_error_page_line(std::string line) {
+
+    std::string status_code;
+    std::string file_name;
+
+    size_t pos = line.find(" ", 4);
+    size_t endPos = line.find(" ", pos + 1);
+    status_code = line.substr(pos + 1, endPos - (pos + 1));
+
+    pos = endPos + 1;
+    file_name = line.substr(pos, line.length() - pos - 1);
+    this->_error_pages.insert(std::make_pair(status_code, file_name));
+}

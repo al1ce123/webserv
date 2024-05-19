@@ -1,6 +1,6 @@
 NAME		= webserv
 CXX			= c++
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++98
+CXXFLAGS	= -Wall -Wextra -Werror #-std=c++98
 SRCDIR		= src
 SRC 		= $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(SRCDIR)/*/*.cpp)
 OBJDIR		= .obj
@@ -25,7 +25,7 @@ fclean: clean
 re: fclean all
 
 test:
-	$(CXX) $(CXXFLAGS) ./testing/main.cpp -o prog && ./prog && rm prog
+	$(CXX) $(CXXFLAGS) ./testing/test.cpp -o prog && ./prog && rm prog
 
 debug: fclean $(OBJ)
 	$(CXX) -g3 $(CXXFLAGS) $(HEADER) $(OBJ) -o $(NAME) -fsanitize=address
