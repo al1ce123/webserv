@@ -18,12 +18,16 @@ public:
 
     // Member functions
     void parser(std::string file);
-    int parse_listen_line(std::string line);
-    void parse_server_name_line(std::string line);
-    Location* parse_location_line(std::ifstream& file, std::string line);
-    void parse_index_line(std::string line);
-    std::string parse_root_line(std::string line);
-    void parse_error_page_line(std::string line);
+    int parseListenLine(std::string line);
+    void parseServerNameLine(std::string line);
+    Location* parseLocationLine(std::ifstream& file, std::string line);
+    void parseIndexLine(std::string line);
+    std::string parseRootLine(std::string line);
+    void parseErrorPageLine(std::string line);
+    void resize(size_t new_capacity);
+    void addLocation(Location* location);
+    std::string parseClientMaxBodySizeLine(std::string line);
+    
 
 private:
     std::map<std::string, std::string> _sockets; // parse the listen directive
@@ -36,6 +40,8 @@ private:
                                                        config file you have to specify one status code and one file 
                                                        per line for the sake of simplicity */ 
     Location** _locations;
+    size_t _size;
+    size_t _capacity;
 };
 
 #endif

@@ -10,7 +10,7 @@ Location::~Location() {}
 Location& Location::operator=(const Location &rhs) {}
 
 // Member functions
-std::string Location::get_the_route(std::string line) {
+std::string Location::getTheRoute(std::string line) {
 
         std::string result;
 
@@ -23,7 +23,7 @@ std::string Location::get_the_route(std::string line) {
         return result;
 }
 
-std::string Location::get_directive(std::string line) {
+std::string Location::getDirective(std::string line) {
 
     std::string result;
     size_t startIndex = 8;
@@ -33,7 +33,7 @@ std::string Location::get_directive(std::string line) {
     return result;
 }
 
-std::string Location::get_root(std::string line) {
+std::string Location::getRoot(std::string line) {
 
     std::string result;
 
@@ -44,7 +44,7 @@ std::string Location::get_root(std::string line) {
     return result;
 }
 
-void Location::get_index(std::string line) {
+void Location::getIndex(std::string line) {
 
     std::string result;
 
@@ -66,7 +66,7 @@ void Location::get_index(std::string line) {
     }
 }
 
-void Location::get_methods(std::string line) {
+void Location::getMethods(std::string line) {
 
     std::string result;
 
@@ -89,10 +89,14 @@ void Location::get_methods(std::string line) {
 
 }
 
-std::string Location::get_redir(std::string line) {
+std::string Location::getRedir(std::string line) {
     // need to send a new http request to the new domain => changing the host header I guess
 }
 
-std::string Location::set_autoindex_to_true(std::string line) { 
+std::string Location::setAutoindexToTrue(std::string line) {
     this->_autoindex = true;
+}
+
+std::string Location::getMaxClientBodySize(std::string line) {
+    
 }

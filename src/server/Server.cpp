@@ -1,6 +1,6 @@
 #include "../../include/server/Server.h"
 
-Server::Server() {}
+Server::Server() : _locations(NULL), _size(0), _capacity(0) {}
 
 Server::Server(const Server &src) {}
 
@@ -34,54 +34,63 @@ void Server::parser(std::string file) {
         // Look for Server's listen directive
         pos = line.find("listen");
         if (pos != std::string::npos) {
-            parse_listen_line(line);
+            parseListenLine(line);
             continue;
         }
         
         // Look for Server's server_name directive
         pos = line.find("server_name");
         if (pos != std::string::npos) {
-            parse_server_name_line(line);
+            parseServerNameLine(line);
             continue;
         }
 
         // Look for Server's root directive
         pos = line.find("root");
         if (pos != std::string::npos) {
-            parse_root_line(line);
+            parseRootLine(line);
             continue;
         }
 
         // Look for Server's index directive
         pos = line.find("index");
         if (pos != std::string::npos) {
-            parse_index_line(line);
+            parseIndexLine(line);
             continue;
         }
 
         // Look for Server's location directive
         pos = line.find("location");
         if (pos != std::string::npos) {
-            parse_location_line(configFile, line);
+            Location* newLocation;
+            newLocation = parseLocationLine(configFile, line);
+    
             continue;
         }
 
         // Look for Server's error_page directive
         pos = line.find("error_page");
         if (pos != std::string::npos) {
-            parse_error_page_line(line);
+            parseErrorPageLine(line);
+            continue;
+        }
+
+        // Look for Server's client_max_body_size directive
+        pos = line.find("client_max_body_size");
+        if (pos != std::string::npos) {
+            parseClientMaxBodySizeLine(line);
             continue;
         }
     }
     configFile.close();
 }
 
-Location* Server::parse_location_line(std::ifstream& file, std::string line) {
+Location* Server::parseLocationLine(std::ifstream& file, std::string line) {
 
     try {
         Location* ptr = new Location();
 
-        ptr->get_the_route(line);
+        ptr->getTheRoute(line);
 
         std::string directive;
         std::string newLine;
@@ -89,18 +98,20 @@ Location* Server::parse_location_line(std::ifstream& file, std::string line) {
         while (line[0] != '}') {
             std::getline(file, newLine);
 
-            directive = ptr->get_directive(newLine);
+            directive = ptr->getDirective(newLine);
 
             if (directive == "root") {
-                ptr->get_root(newLine);
+                ptr->getRoot(newLine);
             } else if (directive == "index") {
-                ptr->get_index(newLine);
+                ptr->getIndex(newLine);
             } else if (directive == "limit_except") {
-                ptr->get_methods(newLine);
+                ptr->getMethods(newLine);
             } else if (directive == "return") {
-                ptr->get_redir(newLine);
+                ptr->getRedir(newLine);
             } else if (directive == "autoindex") {
-                ptr->set_autoindex_to_true(newLine);
+                ptr->setAutoindexToTrue(newLine);
+            } else if (directive == "client_max_body_size") {
+                ptr->getMaxClientBodySize(newLine);
             } else {
                 continue;
             }
@@ -110,7 +121,7 @@ Location* Server::parse_location_line(std::ifstream& file, std::string line) {
     }
 }
 
-int Server::parse_listen_line(std::string line) {
+int Server::parseListenLine(std::string line) {
 
     std::string ip;
     std::string saved_ip;
@@ -344,7 +355,7 @@ int Server::parse_listen_line(std::string line) {
     return 0;
 }
 
-void Server::parse_server_name_line(std::string line) {
+void Server::parseServerNameLine(std::string line) {
 
     std::string result;
 
@@ -366,7 +377,7 @@ void Server::parse_server_name_line(std::string line) {
     }
 }
 
-void Server::parse_index_line(std::string line) {
+void Server::parseIndexLine(std::string line) {
 
     std::string result;
 
@@ -388,7 +399,7 @@ void Server::parse_index_line(std::string line) {
     }
 }
 
-std::string Server::parse_root_line(std::string line) {
+std::string Server::parseRootLine(std::string line) {
 
     std::string result;
 
@@ -399,7 +410,7 @@ std::string Server::parse_root_line(std::string line) {
     return result;
 }
 
-void Server::parse_error_page_line(std::string line) {
+void Server::parseErrorPageLine(std::string line) {
 
     std::string status_code;
     std::string file_name;
@@ -412,3 +423,32 @@ void Server::parse_error_page_line(std::string line) {
     file_name = line.substr(pos, line.length() - pos - 1);
     this->_error_pages.insert(std::make_pair(status_code, file_name));
 }
+
+void Server::resize(size_t new_capacity) {
+    Location** new_locations = new Location* [new_capacity];
+    for (size_t i = 0; i < this->_size; i++) {
+        new_locations[i] = this->_locations[i];
+    }
+    delete[] this->_locations;
+    this->_locations = new_locations;
+    this->_capacity = new_capacity;
+}
+
+void Server::addLocation(Location* location) {
+    size_t new_capacity;
+    if (this->_size == this->_capacity) {
+        if (this->_capacity == 0) {
+            new_capacity = 1;
+        } else {
+            new_capacity = this->_capacity * 2;
+        }
+        resize(new_capacity);
+    }
+    this->_locations[this->_size++] = location;
+}
+
+std::string Server::parseClientMaxBodySizeLine(std::string line) {
+
+}
+
+

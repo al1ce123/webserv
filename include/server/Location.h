@@ -13,15 +13,17 @@ public:
     Location& operator=(const Location &rhs);
 
     // Member functions
-    std::string get_the_route(std::string line);
-    std::string get_directive(std::string line);
-    std::string get_root(std::string line);
-    void get_index(std::string line);
-    void get_methods(std::string line);
-    std::string get_redir(std::string line);
-    std::string set_autoindex_to_true(std::string line);
+    std::string getTheRoute(std::string line);
+    std::string getDirective(std::string line);
+    std::string getRoot(std::string line);
+    void getIndex(std::string line);
+    void getMethods(std::string line);
+    std::string getRedir(std::string line);
+    std::string setAutoindexToTrue(std::string line);
+    std::string getMaxClientBodySize(std::string line);
 
 private:
+    std::size_t _max_body_size;
     std::string _route; // default route
     std::string _root; // directory where to serve file that match the route
     std::vector<std::string> _index; /* vector to store default files to serve when a directory is requested
