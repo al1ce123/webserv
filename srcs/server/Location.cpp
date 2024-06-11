@@ -6,7 +6,7 @@
 /*   By: nlence-l <nlence-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/13 21:18:59 by jlecorne          #+#    #+#             */
-/*   Updated: 2024/06/09 15:49:01 by nlence-l         ###   ########.fr       */
+/*   Updated: 2024/06/11 16:25:33 by nlence-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,51 +41,6 @@ Location& Location::operator=(const Location &rhs) {
     return *this;
 }
 
-/***** testing *****/
-void Location::printInfos() const {
-    std::cout << "      Max Body Size: " << getMaxBodySize() << std::endl;
-    std::cout << "      Route: " << getRoute() << std::endl;
-    std::cout << "      Root: " << getRoot() << std::endl;
-
-    std::cout << "      Index: ";
-    std::vector<std::string> index = getIndex();
-    for (size_t i = 0; i < index.size(); ++i) {
-        std::cout << index[i] << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "      Methods: ";
-    std::vector<std::string> methods = getMethod();
-    for (size_t i = 0; i < getMethodsSize(); ++i) {
-        std::cout << methods[i] << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "      Redirections:" << std::endl;
-    std::map<std::string, std::string> redir = _redir;
-    for (std::map<std::string, std::string>::const_iterator it = redir.begin(); it != redir.end(); ++it) {
-        std::cout << "  From: " << it->first << ", To: " << it->second << std::endl;
-    }
-
-    std::cout << "      Autoindex: " << (_autoindex ? "true" : "false") << std::endl;
-
-    std::cout << "      Error Pages:" << std::endl;
-    std::map<std::string, std::string> errorPages = getErrorPages();
-    for (std::map<std::string, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
-        std::cout << "  " << it->first << ": " << it->second << std::endl;
-    }
-
-    std::cout << "      CGI Extensions: ";
-    std::vector<std::string> cgiExt = getCgiExt();
-    for (size_t i = 0; i < cgiExt.size(); ++i) {
-        std::cout << cgiExt[i] << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "      Return Path: " << getRetPath() << std::endl;
-    std::cout << "      CGI Path: " << getCgiPath() << std::endl;
-    std::cout << "\n";
-}
 
 /***** getters *****/
 // std::string Location::getRedir(std::string line) {
@@ -148,12 +103,56 @@ std::vector<std::string>            Location::getMethod(void) const {
     return this->_methods;
 }
 
-/***** setters *****/
 void Location::setAutoindexToTrue(void) {
     this->_autoindex = true;
 }
 
-/***** parsing *****/
+/***** member functions *****/
+void Location::printInfos() const {
+    std::cout << "      Max Body Size: " << getMaxBodySize() << std::endl;
+    std::cout << "      Route: " << getRoute() << std::endl;
+    std::cout << "      Root: " << getRoot() << std::endl;
+
+    std::cout << "      Index: ";
+    std::vector<std::string> index = getIndex();
+    for (size_t i = 0; i < index.size(); ++i) {
+        std::cout << index[i] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "      Methods: ";
+    std::vector<std::string> methods = getMethod();
+    for (size_t i = 0; i < getMethodsSize(); ++i) {
+        std::cout << methods[i] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "      Redirections:" << std::endl;
+    std::map<std::string, std::string> redir = _redir;
+    for (std::map<std::string, std::string>::const_iterator it = redir.begin(); it != redir.end(); ++it) {
+        std::cout << "  From: " << it->first << ", To: " << it->second << std::endl;
+    }
+
+    std::cout << "      Autoindex: " << (_autoindex ? "true" : "false") << std::endl;
+
+    std::cout << "      Error Pages:" << std::endl;
+    std::map<std::string, std::string> errorPages = getErrorPages();
+    for (std::map<std::string, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it) {
+        std::cout << "  " << it->first << ": " << it->second << std::endl;
+    }
+
+    std::cout << "      CGI Extensions: ";
+    std::vector<std::string> cgiExt = getCgiExt();
+    for (size_t i = 0; i < cgiExt.size(); ++i) {
+        std::cout << cgiExt[i] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "      Return Path: " << getRetPath() << std::endl;
+    std::cout << "      CGI Path: " << getCgiPath() << std::endl;
+    std::cout << "\n";
+}
+
 void Location::parseRouteLine(std::string line) {
 
         std::string result;
@@ -251,7 +250,6 @@ void Location::parseErrorPageLine(std::string line) {
     this->_error_pages.insert(std::make_pair(status_code, file_name));
 }
 
-/***** utils *****/
 bool Location::hasMethods(void) const {
     if (this->_methods.empty()) {
         return false;

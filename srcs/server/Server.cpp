@@ -6,7 +6,7 @@
 /*   By: nlence-l <nlence-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 17:35:18 by jlecorne          #+#    #+#             */
-/*   Updated: 2024/06/10 13:20:44 by nlence-l         ###   ########.fr       */
+/*   Updated: 2024/06/11 16:27:23 by nlence-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,15 @@ const std::map<std::string, std::vector<std::string>>& Server::getSockets(void) 
     return this->_sockets;
 }
 
-/***** testing *****/
+void Server::setAutoindexToTrue(void) {
+    this->_autoindex = true;
+}
+
+const std::vector<std::string>& Server::getServerName(void) const {
+    return this->_server_name;
+}
+
+/***** member functions *****/
 void Server::printInfos(void) const {
     std::cout << "Methods: ";
     for (size_t i = 0; i < _methods.size(); ++i) {
@@ -139,16 +147,6 @@ void Server::printInfos(void) const {
     std::cout << "CGI Path: " << _cgi_path << std::endl;
 }
 
-/***** setters *****/
-void Server::setAutoindexToTrue(void) {
-    this->_autoindex = true;
-}
-
-const std::vector<std::string>&                                         Server::getServerName(void) const {
-    return this->_server_name;
-}
-
-/***** parsing *****/
 void Server::parser(std::ifstream& file) {
 
     std::string line;
@@ -605,7 +603,6 @@ void Server::parseAllowMethodsLine(std::string line) {
     this->_methods.push_back(temp);
 }
 
-/***** utils *****/
 bool Server::hasMethods(void) const {
     if (this->_methods.empty()) {
         return false;

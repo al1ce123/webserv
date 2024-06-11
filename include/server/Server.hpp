@@ -6,7 +6,7 @@
 /*   By: nlence-l <nlence-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 16:33:57 by jlecorne          #+#    #+#             */
-/*   Updated: 2024/06/10 12:26:38 by nlence-l         ###   ########.fr       */
+/*   Updated: 2024/06/11 16:18:23 by nlence-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,6 @@ public:
     ~Server();
     Server& operator=(const Server &rhs);
 
-    /***** testing *****/
-    void printInfos(void) const;
-
     /***** getters *****/
     Location*                                           getLocation(size_t index) const;
     size_t                                              getLocationsSize() const;
@@ -55,14 +52,12 @@ public:
     double                                              getMaxBodySize(void) const;
     const std::map<std::string, std::vector<std::string>>&     getSockets(void) const;
     const std::vector<std::string>&                            getServerName(void) const;
-
-    /***** setters *****/
     void                                                setAutoindexToTrue(void);
 
-    /***** parsing *****/
+    /***** member functions *****/
+    void printInfos(void) const;
     void                                                parser(std::ifstream& file);
     std::vector<int>                                    getPorts(void);
-
     int                                                 parseListenLine(std::string line);
     std::string                                         parseRootLine(std::string line);
     void                                                parseServerNameLine(std::string line);
@@ -71,8 +66,6 @@ public:
     void                                                parseErrorPageLine(std::string line);
     void                                                parseClientMaxBodySizeLine(std::string line);
     void                                                parseAllowMethodsLine(std::string line);
-
-    /***** utils *****/
     bool                                                hasMethods(void) const;
     std::string                                         getErrorPage(std::string status, std::string actual);
 };

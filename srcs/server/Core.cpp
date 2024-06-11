@@ -6,7 +6,7 @@
 /*   By: nlence-l <nlence-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/13 20:51:48 by jlecorne          #+#    #+#             */
-/*   Updated: 2024/06/11 09:54:05 by nlence-l         ###   ########.fr       */
+/*   Updated: 2024/06/11 16:27:43 by nlence-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,11 @@ void Core::core_parser(std::string& file) {
 }
 
 /***** getters *****/
-// int     Core::get_socket(int i) {return this->_sockets[i];}
-const   std::map<int, sockaddr_in>& Core::get_clients() const {
+const   std::map<int, std::pair<std::string, int>> & Core::get_clients() const {
     return this->_clients;
 }
 
-const   std::map<int, sockaddr_in>& Core::get_servers() const {
+const   std::map<int, std::pair<std::string, int>> & Core::get_servers() const {
     return this->_servers;
 }
 
@@ -67,8 +66,8 @@ int    Core::bind_ports(std::vector<pollfd>& poll_fds) {
     }
 
     for (size_t i = 0; i < this->_ports.size(); i++) {
-        int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-        if (server_fd == -1) {
+        int server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (server_sockfd == -1) {
             std::cerr << "Socket error: " << strerror(errno) << std::endl;
             return 2;
         }
@@ -78,20 +77,25 @@ int    Core::bind_ports(std::vector<pollfd>& poll_fds) {
         server_addr.sin_addr.s_addr = INADDR_ANY;
         server_addr.sin_port = htons(this->_ports[i]);
 
-        if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
+        if (bind(server_sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
             std::cerr << "Bind error: " << strerror(errno) << std::endl;
-            close(server_fd);
+            close(server_sockfd);
             return 3;
         }
 
-        if (listen(server_fd, 10) == -1) {
+        if (listen(server_sockfd, 10) == -1) {
             std::cerr << "Listen error: " << strerror(errno) << std::endl;
-            close(server_fd);
+            close(server_sockfd);
             return 4;
         }
 
-        this->_servers[server_fd] = server_addr;
-        pollfd server_socket = { server_fd, POLLIN, 0 };
+        // Convert client address to string
+        char server_ip_temp[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &(server_addr.sin_addr), server_ip_temp, INET_ADDRSTRLEN);
+        std::string server_ip(server_ip_temp);
+ 
+        this->_servers[server_sockfd] = std::make_pair(server_ip, _ports[i]);
+        pollfd server_socket = { server_sockfd, POLLIN, 0 };
         poll_fds.push_back(server_socket);
         
         if (this->_ports.empty()) {
@@ -106,7 +110,7 @@ int    Core::bind_ports(std::vector<pollfd>& poll_fds) {
 }
 
 void    Core::close_all_sockets() {
-    std::map<int, sockaddr_in>::iterator it;
+    std::map<int, std::pair<std::string, int>> ::iterator it;
 
     for (it = this->_servers.begin(); it != this->_servers.end(); ++it) {
         close(it->first);
@@ -116,12 +120,12 @@ void    Core::close_all_sockets() {
     }
 }
 
-void Core::add_client(int client_fd, const sockaddr_in& client_addr) {
-    this->_clients[client_fd] = client_addr;
+void Core::add_client(int client_fd, std::string requested_ip, int requested_port) {
+    this->_clients[client_fd] = std::make_pair(requested_ip, requested_port);
 }
 
 bool Core::is_server_socket(int sockfd) {
-    std::map<int, sockaddr_in>::iterator it;
+    std::map<int, std::pair<std::string, int>> ::iterator it;
     for (it = this->_servers.begin(); it != this->_servers.end(); it++) {
         if (it->first == sockfd) {
             return true;
@@ -131,7 +135,7 @@ bool Core::is_server_socket(int sockfd) {
 }
 
 bool Core::is_client_socket(int sockfd) {
-    std::map<int, sockaddr_in>::iterator it;
+    std::map<int, std::pair<std::string, int>> ::iterator it;
     for (it = this->_clients.begin(); it != this->_clients.end(); it++) {
         if (it->first == sockfd) {
             return true;
@@ -156,6 +160,8 @@ int Core::webserv(void) {
         for (size_t i = 0; i < poll_fds.size(); i++) {
             if ((this->is_server_socket(poll_fds[i].fd)) && (poll_fds[i].revents & POLLIN)) {
                 // Accept new client connection
+                std::string requested_ip;
+                int requested_port;
                 struct sockaddr_in client_addr;
                 socklen_t addr_size = sizeof(client_addr);
                 
@@ -164,9 +170,12 @@ int Core::webserv(void) {
                     std::cerr << "Accept error: " << strerror(errno) << std::endl;
                     return 1;
                 }
+                
+                requested_ip = this->_servers[poll_fds[i].fd].first;
+                requested_port = this->_servers[poll_fds[i].fd].second;
                 pollfd client_pollfd = { client_sockfd, POLLIN, 0 };
                 poll_fds.push_back(client_pollfd);
-                this->add_client(client_sockfd, client_addr);
+                this->add_client(client_sockfd, requested_ip, requested_port);
             } else if ((this->is_client_socket(poll_fds[i].fd)) && (poll_fds[i].revents & POLLIN)) {
                 std::string http_request;
                 char        buffer;
@@ -249,7 +258,6 @@ int Core::webserv(void) {
     return 0;
 }
 
-
 void    Core::check_req(const Request *req, Response *res, int client_sockfd) {
     Server*      match_clust = match_cluster(req, client_sockfd);
     bool        stop = false;
@@ -288,29 +296,17 @@ void    Core::check_req(const Request *req, Response *res, int client_sockfd) {
         res->set_status("", "");
 }
 
-/*
-The match_cluster function iterates over all our servers
-in _clusters to find the best server block match and returns
-a pointer to Server previously allocated (in core_parser).
-I added the client fd because we need its ip addr and port.
-*/
 Server* Core::match_cluster(const Request *req, int client_sockfd) {
     std::vector<size_t> candidates;
     Server *result = nullptr;
-
-    char temp[INET_ADDRSTRLEN];
-    if (inet_ntop(AF_INET, &this->_clients[client_sockfd].sin_addr, temp, INET_ADDRSTRLEN) == nullptr) {
-        std::cerr << "Inet_ntop error: " << strerror(errno) << std::endl;
-        return nullptr;
-    }
-    int client_port = ntohs(this->_clients[client_sockfd].sin_port);
-
-    std::string client_ip(temp);
+    std::string requested_ip = this->_clients[client_sockfd].first;
+    int requested_port = this->_clients[client_sockfd].second;
 
     for (size_t i = 0; i < this->_clusters.size(); i++) {
         std::map<std::string, std::vector<std::string>> sockets = this->_clusters[i]->getSockets();
 
         for (std::map<std::string, std::vector<std::string>>::iterator it = sockets.begin(); it != sockets.end(); it++) {
+            
             std::vector<int> ports;
             int port;
 
@@ -323,9 +319,9 @@ Server* Core::match_cluster(const Request *req, int client_sockfd) {
                 ports.push_back(port);
             }
 
-            if (client_ip == it->first || client_ip == "0.0.0.0") {
+            if (requested_ip == it->first || requested_ip == "0.0.0.0" || requested_ip == "127.0.0.1") {
                 for (size_t j = 0; j < ports.size(); j++) {
-                    if (client_port == ports[j]) {
+                    if (requested_port == ports[j]) {
                         candidates.push_back(i);
                         break;
                     }
@@ -335,7 +331,7 @@ Server* Core::match_cluster(const Request *req, int client_sockfd) {
     }
 
     if (candidates.empty()) {
-        std::cerr << "No matching server block found for client: " << client_ip << ":" << client_port << std::endl;
+        std::cerr << "No matching server block found for client: " << requested_ip << ":" << requested_port << std::endl;
         return nullptr;
     }
 
@@ -497,4 +493,3 @@ const char *Core::InterServError::what() const throw() {
 const char *Core::BodyRecvError::what() const throw() {
     return ("\033[31mERROR\033[0m: Error receiving request's body");
 }
-

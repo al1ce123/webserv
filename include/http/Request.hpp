@@ -6,7 +6,7 @@
 /*   By: nlence-l <nlence-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/22 22:32:10 by jlecorne          #+#    #+#             */
-/*   Updated: 2024/06/11 09:12:56 by nlence-l         ###   ########.fr       */
+/*   Updated: 2024/06/11 16:19:24 by nlence-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,8 @@ private:
     int                                 _port;
     size_t                              _content_len;
     bool                                _chunked;
-
     std::vector<std::string>            _chunks;
     std::vector<Part*>                  _parts;
-
-    /*      Adding an std::map<std::string, std::string> for easy access
-            to different headers      */
     std::map<std::string, std::string>  _headerMap;
 
 public:
@@ -57,15 +53,12 @@ public:
     std::string                         get_user_agent(void) const;
     std::string                         get_http_protocol(void) const;
 
-    /***** parsing *****/
+    /***** member functions *****/
     void                                body_type();
     void                                set_header(const std::string &head);
     void                                add_chunk(std::string chunk);
     void                                add_part(Part* part);
-
     void                                parseHeader(); // Parse the header and fill the map
-    
-    /***** utils *****/
     int                                 has_body() const;
     bool                                chunked() const;
     void                                print_infos();

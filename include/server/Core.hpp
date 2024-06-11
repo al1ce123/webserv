@@ -6,7 +6,7 @@
 /*   By: nlence-l <nlence-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/13 20:52:00 by jlecorne          #+#    #+#             */
-/*   Updated: 2024/06/11 09:39:09 by nlence-l         ###   ########.fr       */
+/*   Updated: 2024/06/11 16:15:03 by nlence-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,25 +50,24 @@ const std::string CGI_PATH = "./cgi-bin/";
 class Core
 {
 private:
-    std::map<int, sockaddr_in>  _clients;
-    std::map<int, sockaddr_in>  _servers;
-    std::vector<int>            _ports;
-    std::vector<Server*>        _clusters;
-    int                         _maxClients;
+    std::map<int, std::pair<std::string, int>>          _servers; // server_sockfd, binded to this ip/port
+    std::map<int, std::pair<std::string, int>>          _clients; // client_sockfd, the client did a request to this ip/port
+    std::vector<int>                                    _ports;
+    std::vector<Server*>                                _clusters;
+    int                                                 _maxClients;
 
 public:
     Core();
     ~Core();
 
     /***** getters *****/
-    // int                     get_socket(int i);
-    const   std::map<int, sockaddr_in>& get_clients() const;
-    const   std::map<int, sockaddr_in>& get_servers() const;
+    const   std::map<int, std::pair<std::string, int>> & get_clients() const;
+    const   std::map<int, std::pair<std::string, int>> & get_servers() const;
 
     /***** member functions *****/
     int                     bind_ports(std::vector<pollfd>& poll_fds);
     void                    close_all_sockets();
-    void                    add_client(int client_fd, const sockaddr_in& client_addr);
+    void                    add_client(int client_fd, std::string requested_ip, int requested_port);
     bool                    is_server_socket(int sockfd);
     bool                    is_client_socket(int sockfd);
     void                    core_parser(std::string& file);

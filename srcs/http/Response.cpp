@@ -6,23 +6,28 @@
 /*   By: nlence-l <nlence-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 17:35:01 by jlecorne          #+#    #+#             */
-/*   Updated: 2024/06/11 09:32:45 by nlence-l         ###   ########.fr       */
+/*   Updated: 2024/06/11 16:29:03 by nlence-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server/Core.hpp"
 #include "../../include/http/Response.hpp"
 
-Response::Response() : _content_len(0) {(void)this->_content_len;}
+Response::Response() : _content_len(0) {
+    (void)this->_content_len;
+}
 
 Response::~Response() {}
 
 /***** getters *****/
-std::string Response::get_file() {return this->_file;}
+std::string Response::get_file() {
+    return this->_file;
+}
 
-std::string Response::get_status() {return this->_status;}
+std::string Response::get_status() {
+    return this->_status;
+}
 
-/***** setters *****/
 void        Response::set_head() { 
     std::stringstream head;
     head << "HTTP/1.1 " << this->_status << this->_status_msg << "\r\n";
@@ -32,9 +37,13 @@ void        Response::set_head() {
     this->_header = head.str();
 }
 
-void        Response::set_body(const std::string body) {this->_body = body;}
+void        Response::set_body(const std::string body) {
+    this->_body = body;
+}
 
-void        Response::set_file(const std::string file) {this->_file = file;}
+void        Response::set_file(const std::string file) {
+    this->_file = file;
+}
 
 void        Response::set_status(std::string code, const std::string msg) {
     this->_status = code;
@@ -46,13 +55,12 @@ std::string Response::get_response(void) {
     return http_response;    
 }
 
-/***** process *****/
+/***** member functions *****/
 void        Response::respond(int csocket) {
     std::string response = this->_header + this->_body;
-    // if (csocket & POLLOUT) {
-        send(csocket, response.c_str(), response.length(), 0);
-    // }
+    send(csocket, response.c_str(), response.length(), 0);
 }
 
-/***** utils *****/
-void        Response::printh() {std::cout << this->_header;}
+void        Response::printh() {
+    std::cout << this->_header;
+}

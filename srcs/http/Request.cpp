@@ -6,7 +6,7 @@
 /*   By: nlence-l <nlence-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/23 15:41:53 by jlecorne          #+#    #+#             */
-/*   Updated: 2024/06/11 09:13:03 by nlence-l         ###   ########.fr       */
+/*   Updated: 2024/06/11 16:23:47 by nlence-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,18 +17,26 @@ Request::Request() : _port(0), _content_len(0), _chunked(false) {}
 Request::~Request() {}
 
 /***** getters *****/
-std::string Request::get_uri(void) const {return this->_uri;}
+std::string Request::get_uri(void) const {
+    return this->_uri;
+}
 
-std::string Request::get_bound(void) {return this->_boundary;}
+std::string Request::get_bound(void) {
+    return this->_boundary;
+}
 
-size_t      Request::get_contLen(void) const {return this->_content_len;}
+size_t      Request::get_contLen(void) const {
+    return this->_content_len;
+}
 
-int         Request::get_port(void) const {return this->_port;}
+int         Request::get_port(void) const {
+    return this->_port;
+}
 
-std::string                         Request::get_ip_addr(void) const {return this->_ip_addr;}
+std::string Request::get_ip_addr(void) const {
+    return this->_ip_addr;
+}
 
-
-/***** CGI getters *****/
 std::string Request::get_content_length(void) const {
 
     if (this->_headerMap.count("Content-Length")) {
@@ -92,7 +100,6 @@ std::string Request::get_http_protocol(void) const {
     return protocol.c_str();
 }
 
-/***** parsing *****/
 void        Request::body_type() {
     size_t contlen_pos = this->_header.find("Content-Length: ");
     if (contlen_pos != std::string::npos) {
@@ -163,9 +170,13 @@ void        Request::set_header(const std::string& header) {
     this->_header = header;
 }
 
-void        Request::add_chunk(std::string chunk) {this->_chunks.push_back(chunk);}
+void        Request::add_chunk(std::string chunk) {
+    this->_chunks.push_back(chunk);
+}
 
-void        Request::add_part(Part* part) {_parts.push_back(part);}
+void        Request::add_part(Part* part) {
+    _parts.push_back(part);
+}
 
 void        Request::parseHeader(void) {
     std::istringstream stream(this->_header);
@@ -180,7 +191,6 @@ void        Request::parseHeader(void) {
     }
 }
 
-/***** utils *****/
 int         Request::has_body() const {
     if (this->chunked())
         return 1;
@@ -191,7 +201,9 @@ int         Request::has_body() const {
     return 0;
 }
 
-bool        Request::chunked() const {return this->_chunked;}
+bool        Request::chunked() const {
+    return this->_chunked;
+}
 
 void        Request::print_infos() {
 

@@ -6,7 +6,7 @@
 /*   By: nlence-l <nlence-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/06 16:33:48 by jlecorne          #+#    #+#             */
-/*   Updated: 2024/06/09 15:44:20 by nlence-l         ###   ########.fr       */
+/*   Updated: 2024/06/11 16:19:18 by nlence-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,43 +34,36 @@ private:
     std::string                         _ret_path;
     std::string                         _cgi_path;
 
-
 public:
     Location();
     Location(const Location &src);
     ~Location();
     Location& operator=(const Location &rhs);
 
-    /***** testing *****/
-    void printInfos() const;
-    
     /***** getters *****/
-    // std::string getRedir(std::string line);
     std::string                         getDirective(std::string line);
     std::string                         getRoute(void) const;
     std::string                         getRoot(void) const;
+    // std::string getRedir(std::string line);
     std::vector<std::string>            getIndex(void) const;
     std::vector<std::string>            getCgiExt(void) const;
     std::string                         getRetPath(void) const;
     std::string                         getCgiPath(void) const;
-    std::map<std::string, std::string>            getErrorPages(void) const;
+    std::map<std::string, std::string>  getErrorPages(void) const;
     std::string                         getMethod(size_t index);
     size_t                              getMethodsSize(void) const;
     double                              getMaxBodySize(void) const;
     std::vector<std::string>            getMethod(void) const;
-
-    /***** setters *****/
     void                                setAutoindexToTrue(void);
 
-    /***** parsing *****/    
+    /***** member functions *****/    
+    void printInfos() const;
     void                                parseRouteLine(std::string line);
     void                                parseRootLine(std::string line);
     void                                parseIndexLine(std::string line);
     void                                parseAllowMethodsLine(std::string line);
     void                                parseClientMaxBodySize(std::string line);
     void                                parseErrorPageLine(std::string line);
-
-    /***** utils *****/
     bool                                hasMethods(void) const;
     std::string                         getErrorPage(std::string status, std::string actual);
 };
